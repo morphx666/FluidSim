@@ -14,8 +14,8 @@ namespace LiquidSim {
 
         public static void Main(string[] args) {
             ComplexDouble[] a = new ComplexDouble[97687];
-            ComplexDouble w = 0, d;
-            int p, q, r = 0;
+            ComplexDouble w, d;
+            int p, q, r;
             int x, y;
             char[] b = new char[6856];
             int t;
@@ -54,7 +54,7 @@ namespace LiquidSim {
                         }
                         w -= ComplexDouble.i;
                     } else {
-                        w = w.R + 2;
+                        w = (int)(w.R + 2);
                     }
                 }
 
