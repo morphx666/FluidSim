@@ -14,14 +14,18 @@ namespace LiquidSim {
         private const double V = 8.0;  // Viscosity         | 8.0
         private const double R = 15.0; // Sim. Resolution   | 10.0
 
+        private const int cw = 80;
+        private const int ch = 25;
+
         public static void Main(string[] args) {
             const string prefix = " '`-.|//,\\|\\_\\/#\n";
 
             try {
-                Console.SetWindowSize(80, 30);
-                Console.SetBufferSize(80, 30);
+                Console.SetWindowSize(cw, ch + 5);
+                Console.SetBufferSize(cw, ch + 5);
             } catch { }
             Console.CursorVisible = false;
+            Console.Title = $"FluidSim";
 
             int fileIndex = 0;
             FileInfo[] files = (new DirectoryInfo(@"..\..\FluidASCII")).GetFiles("*.txt");
@@ -29,19 +33,17 @@ namespace LiquidSim {
             while(true) {
                 string projectName = files[fileIndex].Name.Split('.')[0].ToUpper();
                 Console.Clear();
-                Console.Title = $"FluidSim: {projectName}";
                 Console.SetCursorPosition(0, 0);
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.Write("Project: ");
-                Console.ForegroundColor = ConsoleColor.Blue;
-                Console.WriteLine(projectName);
+                Console.ForegroundColor = ConsoleColor.Yellow; Console.Write("FluidSim ");
+                Console.ForegroundColor = ConsoleColor.White; Console.Write("Project: ");
+                Console.ForegroundColor = ConsoleColor.Blue; Console.WriteLine(projectName);
                 Console.ForegroundColor = ConsoleColor.DarkGray;
                 Console.WriteLine("Press [ESC] to terminate, any other key to run next project");
                 Console.ForegroundColor = ConsoleColor.White;
                 string data = File.ReadAllText(files[fileIndex].FullName).Replace("\r", "");
                 fileIndex = (fileIndex + 1) % files.Length;
 
-                int cb = Console.WindowWidth * (Console.WindowHeight - 5);
+                int cb = cw * ch;
                 ComplexDouble[] a = new ComplexDouble[97687];
                 ComplexDouble w = 0, d;
                 int p, q, r = 0;
@@ -89,18 +91,18 @@ namespace LiquidSim {
                         b[x] = '\x0';
                     }
                     for(p = 0; p < r; p += 5) {
-                        t = 10 + (x = (int)(a[p] * ComplexDouble.i).R) + 80 * (y = (int)(a[p] / 2).R);
+                        t = 10 + (x = (int)(a[p] * ComplexDouble.i).R) + cw * (y = (int)(a[p] / 2).R);
                         a[p] += a[p + 4] += a[p + 3] / R * (a[p + 1].R == 0 ? 1 : 0);
                         // x = 0 <= x && x < 79 && 0 <= y && y < 23 ? 1[1[*t |= 8, t] |= 4, t += 80] = 1, *t |= 2 : 0;
-                        if(0 <= x && x < 79 && 0 <= y && y < 23) {
+                        if(0 <= x && x < (cw - 1) && 0 <= y && y < (ch - 2)) {
                             b[t] = (char)((byte)b[t] | 8); // *t |= 8
                             b[t + 1] = (char)((byte)b[t + 1] | 4); // 1[*t |= 8, t] |= 4
-                            b[(t += 80) + 1] = (char)1; // 1[1[*t |= 8, t] |= 4, t += 80] = 1
+                            b[(t += cw) + 1] = (char)1; // 1[1[*t |= 8, t] |= 4, t += 80] = 1
                             b[t] = (char)((byte)b[t] | 2); // *t |= 2
                         }
                     }
                     for(x = 0; cb - 1 > x++;) {
-                        b[x] = prefix[(x % 80 - 9) != 0 ? b[x] : 16];
+                        b[x] = prefix[(x % cw - 9) != 0 ? b[x] : 16];
                     }
                 }
 
