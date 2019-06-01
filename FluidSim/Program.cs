@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks;
 
 // This is a direct port of a fluid simulation program developed by Yusuke Endoh
 // https://github.com/LeoColomb/FluidASCII/blob/master/endoh1_deobfuscate.c
@@ -8,39 +9,47 @@ using System.IO;
 
 namespace LiquidSim {
     public class Program {
-        private const double G = 1.0; // Gravity factor
-        private const double P = 4.0; // Pressure
-        private const double V = 8.0; // Viscosity
+        private const double G = 1.0;  // Gravity factor    | 1.0
+        private const double P = 4.0;  // Pressure          | 4.0
+        private const double V = 8.0;  // Viscosity         | 8.0
+        private const double R = 15.0; // Sim. Resolution   | 10.0
 
         public static void Main(string[] args) {
-            ComplexDouble[] a = new ComplexDouble[97687];
-            ComplexDouble w, d;
-            int p, q, r;
-            int x, y;
-            char[] b = new char[6856];
-            int t;
-
             const string prefix = " '`-.|//,\\|\\_\\/#\n";
 
+            try {
+                Console.SetWindowSize(80, 30);
+                Console.SetBufferSize(80, 30);
+            } catch { }
             Console.CursorVisible = false;
+
             int fileIndex = 0;
             FileInfo[] files = (new DirectoryInfo(@"..\..\FluidASCII")).GetFiles("*.txt");
+
             while(true) {
+                string projectName = files[fileIndex].Name.Split('.')[0].ToUpper();
                 Console.Clear();
+                Console.Title = $"FluidSim: {projectName}";
                 Console.SetCursorPosition(0, 0);
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.Write("Project: ");
                 Console.ForegroundColor = ConsoleColor.Blue;
-                Console.WriteLine($"{files[fileIndex].Name.Split('.')[0].ToUpper()}");
+                Console.WriteLine(projectName);
                 Console.ForegroundColor = ConsoleColor.DarkGray;
                 Console.WriteLine("Press [ESC] to terminate, any other key to run next project");
                 Console.ForegroundColor = ConsoleColor.White;
                 string data = File.ReadAllText(files[fileIndex].FullName).Replace("\r", "");
                 fileIndex = (fileIndex + 1) % files.Length;
 
+                int cb = Console.WindowWidth * (Console.WindowHeight - 5);
+                ComplexDouble[] a = new ComplexDouble[97687];
+                ComplexDouble w = 0, d;
+                int p, q, r = 0;
+                int x, y;
+                char[] b = new char[cb];
+                int t;
+
                 for(int i = 0; i < a.Length; i++) a[i] = new ComplexDouble();
-                r = 0;
-                w = 0;
 
                 for(int i = 0; i < data.Length; i++) {
                     x = data[i];
@@ -76,23 +85,22 @@ namespace LiquidSim {
                             if(0 < (int)(1 - w).R) a[p + 3] += w * (d * (3 - a[p + 2] - a[q + 2]) * P + a[p + 4] * V - a[q + 4] * V) / a[p + 2];
                         }
                     }
-                    for(x = 0; 2012 - 1 > x++;) {
+                    for(x = 0; cb - 1 > x++;) {
                         b[x] = '\x0';
                     }
                     for(p = 0; p < r; p += 5) {
                         t = 10 + (x = (int)(a[p] * ComplexDouble.i).R) + 80 * (y = (int)(a[p] / 2).R);
-                        a[p] += a[p + 4] += a[p + 3] / 10 * (a[p + 1].Power2() == 0 ? 1 : 0);
+                        a[p] += a[p + 4] += a[p + 3] / R * (a[p + 1].R == 0 ? 1 : 0);
                         // x = 0 <= x && x < 79 && 0 <= y && y < 23 ? 1[1[*t |= 8, t] |= 4, t += 80] = 1, *t |= 2 : 0;
                         if(0 <= x && x < 79 && 0 <= y && y < 23) {
                             b[t] = (char)((byte)b[t] | 8); // *t |= 8
                             b[t + 1] = (char)((byte)b[t + 1] | 4); // 1[*t |= 8, t] |= 4
-                            t += 80;
-                            b[t + 1] = (char)1; // 1[1[*t |= 8, t] |= 4, t += 80] = 1
+                            b[(t += 80) + 1] = (char)1; // 1[1[*t |= 8, t] |= 4, t += 80] = 1
                             b[t] = (char)((byte)b[t] | 2); // *t |= 2
                         }
                     }
-                    for(x = 0; 2012 - 1 > x++;) {
-                        b[x] = prefix[(x % 80 - 9) != 0 ? b[x] : (prefix.Length - 1)];
+                    for(x = 0; cb - 1 > x++;) {
+                        b[x] = prefix[(x % 80 - 9) != 0 ? b[x] : 16];
                     }
                 }
 
