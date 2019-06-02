@@ -1,9 +1,10 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 // This is a direct port of a fluid simulation program developed by Yusuke Endoh
-// https://github.com/LeoColomb/FluidASCII/blob/master/endoh1_deobfuscate.c
+// https://github.com/LeoColomb/FluidASCII/blob/master/
 
 // http://madebyevan.com/obscure-cpp-features/
 
@@ -12,7 +13,7 @@ namespace LiquidSim {
         private const double G = 1.0;  // Gravity factor    | 1.0
         private const double P = 4.0;  // Pressure          | 4.0
         private const double V = 8.0;  // Viscosity         | 8.0
-        private const double R = 15.0; // Sim. Resolution   | 10.0
+        private const double R = 12.0; // Sim. Resolution   | 10.0
 
         private const int cw = 80;
         private const int ch = 25;
@@ -87,9 +88,7 @@ namespace LiquidSim {
                             if(0 < (int)(1 - w).R) a[p + 3] += w * (d * (3 - a[p + 2] - a[q + 2]) * P + a[p + 4] * V - a[q + 4] * V) / a[p + 2];
                         }
                     }
-                    for(x = 0; cb - 1 > x++;) {
-                        b[x] = '\x0';
-                    }
+                    Array.Clear(b, 0, b.Length);
                     for(p = 0; p < r; p += 5) {
                         t = 10 + (x = (int)(a[p] * ComplexDouble.i).R) + cw * (y = (int)(a[p] / 2).R);
                         a[p] += a[p + 4] += a[p + 3] / R * (a[p + 1].R == 0 ? 1 : 0);
