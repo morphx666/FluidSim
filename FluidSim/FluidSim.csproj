@@ -3,8 +3,8 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.0</TargetFramework>
-    <AssemblyVersion>2019.6.2.318</AssemblyVersion>
-    <FileVersion>2019.6.2.318</FileVersion>
+    <AssemblyVersion>2019.6.4.335</AssemblyVersion>
+    <FileVersion>2019.6.4.335</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -16,5 +16,9 @@
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <OutputPath>D:\Projects\FluidSim\Release\</OutputPath>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="ComplexDouble.cs" />
+  </ItemGroup>
 
 </Project>

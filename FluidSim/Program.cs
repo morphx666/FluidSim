@@ -1,7 +1,9 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Numerics;
 
 // This is a direct port of a fluid simulation program developed by Yusuke Endoh
 // https://github.com/LeoColomb/FluidASCII/blob/master/
@@ -29,7 +31,8 @@ namespace LiquidSim {
             Console.Title = $"FluidSim";
 
             int fileIndex = 0;
-            FileInfo[] files = (new DirectoryInfo(@"..\..\FluidASCII")).GetFiles("*.txt");
+            char ps = Environment.OSVersion.Platform == PlatformID.Unix ? '/' : '\\';
+            FileInfo[] files = (new DirectoryInfo($"..{ps}..{ps}FluidASCII")).GetFiles("*.txt").OrderBy((f) => f.Name).ToArray();
 
             while(true) {
                 string projectName = files[fileIndex].Name.Split('.')[0].ToUpper();
@@ -45,14 +48,12 @@ namespace LiquidSim {
                 fileIndex = (fileIndex + 1) % files.Length;
 
                 int cb = cw * ch;
-                ComplexDouble[] a = new ComplexDouble[97687];
-                ComplexDouble w = 0, d;
+                Complex[] a = new Complex[97687];
+                Complex w = 0, d;
                 int p, q, r = 0;
                 int x, y;
-                char[] b = new char[cb];
+                char[] b = new char[cb]; cb--;
                 int t;
-
-                for(int i = 0; i < a.Length; i++) a[i] = new ComplexDouble();
 
                 for(int i = 0; i < data.Length; i++) {
                     x = data[i];
@@ -64,9 +65,9 @@ namespace LiquidSim {
                             a[r] = a[r + 5] = (x == 35 ? 1 : 0); // *r = r[5] = x == 35
                             r += 9;
                         }
-                        w -= ComplexDouble.i;
+                        w -= Complex.ImaginaryOne;
                     } else {
-                        w = (int)(w.R + 2);
+                        w = (int)(w.Real + 2);
                     }
                 }
 
@@ -77,21 +78,21 @@ namespace LiquidSim {
                     for(p = 0; p < r; p += 5) {
                         a[p + 2] = a[p + 1] * 9;
                         for(q = 0; q < r; q += 5) {
-                            w = (a[p] - a[q]).Magnitude() / 2 - 1;
-                            if(0 < (int)(1 - w).R) a[p + 2] += w * w;
+                            w = (a[p] - a[q]).Magnitude / 2 - 1;
+                            if(0 < (int)(1 - w).Real) a[p + 2] += w * w;
                         }
                     }
                     for(p = 0; p < r; p += 5) {
                         a[p + 3] = G;
                         for(q = 0; q < r; q += 5) {
-                            w = (d = (a[p] - a[q])).Magnitude() / 2 - 1;
-                            if(0 < (int)(1 - w).R) a[p + 3] += w * (d * (3 - a[p + 2] - a[q + 2]) * P + a[p + 4] * V - a[q + 4] * V) / a[p + 2];
+                            w = (d = (a[p] - a[q])).Magnitude / 2 - 1;
+                            if(0 < (int)(1 - w).Real) a[p + 3] += w * (d * (3 - a[p + 2] - a[q + 2]) * P + a[p + 4] * V - a[q + 4] * V) / a[p + 2];
                         }
                     }
                     Array.Clear(b, 0, b.Length);
                     for(p = 0; p < r; p += 5) {
-                        t = 10 + (x = (int)(a[p] * ComplexDouble.i).R) + cw * (y = (int)(a[p] / 2).R);
-                        a[p] += a[p + 4] += a[p + 3] / R * (a[p + 1].R == 0 ? 1 : 0);
+                        t = 10 + (x = (int)(a[p] * Complex.ImaginaryOne).Real) + cw * (y = (int)(a[p] / 2).Real);
+                        a[p] += a[p + 4] += a[p + 3] / R * (a[p + 1].Real == 0 ? 1 : 0);
                         // x = 0 <= x && x < 79 && 0 <= y && y < 23 ? 1[1[*t |= 8, t] |= 4, t += 80] = 1, *t |= 2 : 0;
                         if(0 <= x && x < (cw - 1) && 0 <= y && y < (ch - 2)) {
                             b[t] = (char)((byte)b[t] | 8); // *t |= 8
@@ -100,12 +101,16 @@ namespace LiquidSim {
                             b[t] = (char)((byte)b[t] | 2); // *t |= 2
                         }
                     }
-                    for(x = 0; cb - 1 > x++;) {
+                    for(x = 0; cb > x++;) {
                         b[x] = prefix[(x % cw - 9) != 0 ? b[x] : 16];
                     }
                 }
 
-                if(Console.ReadKey().Key == ConsoleKey.Escape) return;
+                if(Console.ReadKey(true).Key == ConsoleKey.Escape) {
+                    Console.WriteLine();
+                    Console.CursorVisible = true;
+                    return;
+                }
             }
         }
     }
