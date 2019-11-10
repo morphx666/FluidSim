@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Numerics;
+using System.Collections.Generic;
 
 // This is a direct port of a fluid simulation program developed by Yusuke Endoh
 // https://github.com/LeoColomb/FluidASCII/blob/master/
@@ -31,8 +32,7 @@ namespace LiquidSim {
             Console.Title = $"FluidSim";
 
             int fileIndex = 0;
-            char ps = Environment.OSVersion.Platform == PlatformID.Unix ? '/' : '\\';
-            FileInfo[] files = (new DirectoryInfo($"..{ps}..{ps}FluidASCII")).GetFiles("*.txt").OrderBy((f) => f.Name).ToArray();
+            FileInfo[] files = GetFluidASCIIFolder().GetFiles("*.txt").OrderBy((f) => f.Name).ToArray();
 
             while(true) {
                 string projectName = files[fileIndex].Name.Split('.')[0].ToUpper();
@@ -71,7 +71,7 @@ namespace LiquidSim {
                     }
                 }
 
-                for(; !Console.KeyAvailable;) {
+                for(; Console.IsInputRedirected ? true : !Console.KeyAvailable;) {
                     Console.SetCursorPosition(0, 3);
                     Console.Write(b);
 
@@ -111,6 +111,16 @@ namespace LiquidSim {
                     Console.CursorVisible = true;
                     return;
                 }
+            }
+        }
+
+        public static DirectoryInfo GetFluidASCIIFolder() {
+            char ps = Environment.OSVersion.Platform == PlatformID.Unix ? '/' : '\\';
+            DirectoryInfo di = new DirectoryInfo(Environment.CurrentDirectory);
+            while(true) {
+                IEnumerable<DirectoryInfo> fsa = di.GetDirectories().Where((d) => d.Name == "FluidASCII");
+                if(fsa.Any()) return fsa.Single();
+                di = di.Parent;
             }
         }
     }
